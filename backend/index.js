@@ -7,6 +7,10 @@ const { default: axios } = require("axios");
 const { TODOS } = require("./data/todos");
 const { USERS } = require("./data/users");
 
+// TODOS.map((todo) => {
+//   if (todo.id === 4) todo.title = "zia";
+// });
+
 //If you want to fetch anything from GraphQL you've to create Query. And if you're giving something to GraphQL it is mutation.
 async function startServer() {
   const app = express();
@@ -32,6 +36,9 @@ async function startServer() {
             getAllUsers : [User]
             getUser(id : ID!) : User 
         }
+        type Mutation {
+          deleteTodo(id : ID!) : String
+        }
     `,
     resolvers: {
       Todo: {
@@ -45,6 +52,16 @@ async function startServer() {
           return USERS.find((user) => user.id == id);
         },
       },
+      Mutation: {
+        deleteTodo: (_, { id }) => {
+          let todo = TODOS.find((todo) => todo.id == id);
+          if (!todo) {
+            return "Book not found";
+          }
+          TODOS.filter((todo) => todo.id !== id);
+          return "Done";
+        },
+      },
     },
   });
 
@@ -52,7 +69,7 @@ async function startServer() {
   app.use(cors());
   await server.start();
   app.use("/graphql", expressMiddleware(server));
-  app.listen(8000, () => console.log("Server started at port 8000"));
+  app.listen(8001, () => console.log("Server started at port 8000"));
 }
 startServer();
 
